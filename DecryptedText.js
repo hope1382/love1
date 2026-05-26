@@ -146,3 +146,4 @@ class DecryptedText {
 }
 
 window.DecryptedText = DecryptedText;
+

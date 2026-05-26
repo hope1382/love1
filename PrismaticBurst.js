@@ -386,3 +386,4 @@ class PrismaticBurst {
 }
 
 window.PrismaticBurst = PrismaticBurst;
+

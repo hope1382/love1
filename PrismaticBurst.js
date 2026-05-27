@@ -220,8 +220,19 @@ class PrismaticBurst {
     this.init();
   }
 
-  init() {
-    const { Renderer, Program, Mesh, Triangle, Texture } = ogl;
+  async init() {
+    let Renderer, Program, Mesh, Triangle, Texture;
+    try {
+      const ogl = await import('https://unpkg.com/ogl');
+      Renderer = ogl.Renderer;
+      Program = ogl.Program;
+      Mesh = ogl.Mesh;
+      Triangle = ogl.Triangle;
+      Texture = ogl.Texture;
+    } catch (e) {
+      console.error("Failed to load OGL", e);
+      return;
+    }
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.renderer = new Renderer({ dpr, alpha: false, antialias: false });
     const gl = this.renderer.gl;
@@ -386,4 +397,3 @@ class PrismaticBurst {
 }
 
 window.PrismaticBurst = PrismaticBurst;
-

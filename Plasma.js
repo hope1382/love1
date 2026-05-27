@@ -93,8 +93,18 @@ class Plasma {
     this.init();
   }
 
-  init() {
-    const { Renderer, Program, Mesh, Triangle } = ogl;
+  async init() {
+    let Renderer, Program, Mesh, Triangle;
+    try {
+      const ogl = await import('https://unpkg.com/ogl');
+      Renderer = ogl.Renderer;
+      Program = ogl.Program;
+      Mesh = ogl.Mesh;
+      Triangle = ogl.Triangle;
+    } catch (e) {
+      console.error("Failed to load OGL", e);
+      return;
+    }
 
     const useCustomColor = this.options.color ? 1.0 : 0.0;
     const customColorRgb = this.options.color ? hexToRgb(this.options.color) : [1, 1, 1];
@@ -238,4 +248,3 @@ class Plasma {
 }
 
 window.Plasma = Plasma;
-

@@ -1,4 +1,10 @@
+// Dynamic getters for dependencies to prevent load-order race conditions
+const getTHREE = () => window.THREE || (typeof THREE !== "undefined" ? THREE : undefined);
+const getPostprocessing = () => window.postprocessing || window.POSTPROCESSING || (typeof postprocessing !== "undefined" ? postprocessing : undefined);
+
 const createTouchTexture = () => {
+  const THREE = getTHREE();
+  if (!THREE) return { update: () => {} };
   const size = 64;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -85,6 +91,9 @@ const createTouchTexture = () => {
 };
 
 const createLiquidEffect = (texture, opts) => {
+  const THREE = getTHREE();
+  const postprocessing = getPostprocessing();
+  if (!THREE || !postprocessing) return null;
   const fragment = `
     uniform sampler2D uTexture;
     uniform float uStrength;
@@ -298,6 +307,12 @@ const MAX_CLICKS = 10;
 
 class PixelBlast {
   constructor(container, options = {}) {
+    const THREE = getTHREE();
+    const postprocessing = getPostprocessing();
+    if (!THREE || !postprocessing) {
+      console.warn("PixelBlast: THREE or postprocessing is not loaded yet.", { THREE, postprocessing });
+      return;
+    }
     this.container = container;
     this.options = {
       variant: 'square',
@@ -326,6 +341,12 @@ class PixelBlast {
   }
 
   init() {
+    const THREE = getTHREE();
+    const postprocessing = getPostprocessing();
+    if (!THREE || !postprocessing) {
+      console.error("PixelBlast init: Failed to initialize. Missing dependencies.", { THREE, postprocessing });
+      return;
+    }
     this.canvas = document.createElement('canvas');
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
@@ -454,8 +475,8 @@ class PixelBlast {
       this.touch.addTouch({ x: fx / w, y: fy / h });
     };
 
-    this.renderer.domElement.addEventListener('pointerdown', this.onPointerDown, { passive: true });
-    this.renderer.domElement.addEventListener('pointermove', this.onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', this.onPointerDown, { passive: true });
+    window.addEventListener('pointermove', this.onPointerMove, { passive: true });
 
     this.animate();
   }
@@ -488,8 +509,8 @@ class PixelBlast {
   destroy() {
     cancelAnimationFrame(this.raf);
     this.ro?.disconnect();
-    this.renderer.domElement.removeEventListener('pointerdown', this.onPointerDown);
-    this.renderer.domElement.removeEventListener('pointermove', this.onPointerMove);
+    window.removeEventListener('pointerdown', this.onPointerDown);
+    window.removeEventListener('pointermove', this.onPointerMove);
     this.quad?.geometry.dispose();
     this.material.dispose();
     this.composer?.dispose();
@@ -501,5 +522,3 @@ class PixelBlast {
 }
 
 window.PixelBlast = PixelBlast;
-
-

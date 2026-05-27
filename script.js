@@ -13,7 +13,7 @@ const DEFAULT_DATA = {
   instagram: "https://instagram.com/nadia_israr/",
   tiktok: "https://tiktok.com",
   email: "mailto:nishat2625@gmail.com",
-  password: "admin123"
+  password: "admin123",
 };
 
 // Plasma Instance
@@ -26,12 +26,14 @@ let currentRoleIndex = 0;
 // ── Load data from localStorage or use defaults ──
 function getData() {
   const saved = localStorage.getItem("profileData");
-  let data = saved ? { ...DEFAULT_DATA, ...JSON.parse(saved) } : { ...DEFAULT_DATA };
-  
+  let data = saved
+    ? { ...DEFAULT_DATA, ...JSON.parse(saved) }
+    : { ...DEFAULT_DATA };
+
   // Data migration: Force update if name is old or key stats changed
   if (
-    data.name === "Imane Anys" || 
-    !data.bio.includes("#stcpsc") || 
+    data.name === "Imane Anys" ||
+    !data.bio.includes("#stcpsc") ||
     data.followers === "12.4k" ||
     !data.instagram.includes("nadia_israr") ||
     !data.avatar.includes("imgur.com")
@@ -57,7 +59,7 @@ function initDecryptedRoles() {
     "an anime lover",
     "a singer",
     "a girl",
-    "a poetress"
+    "a poetress",
   ];
 
   if (!decryptedInstance) {
@@ -66,16 +68,16 @@ function initDecryptedRoles() {
       speed: 50,
       maxIterations: 12,
       sequential: true,
-      revealDirection: 'center',
-      className: 'revealed',
-      encryptedClassName: 'encrypted',
+      revealDirection: "center",
+      className: "revealed",
+      encryptedClassName: "encrypted",
       onComplete: () => {
         setTimeout(() => {
           currentRoleIndex = (currentRoleIndex + 1) % roles.length;
           decryptedInstance.setText(roles[currentRoleIndex]);
           decryptedInstance.start();
         }, 2500); // Wait before next role
-      }
+      },
     });
     decryptedInstance.start();
   }
@@ -86,7 +88,7 @@ function applyData(data) {
   // Page & Logo title
   document.title = `${data.name} | Creator Profile`;
   document.getElementById("profile-display-name").textContent = data.name;
-  
+
   // Set logo to first word of her name
   const firstWord = data.name.trim().split(" ")[0] || "Nadia";
   document.getElementById("logo-name").textContent = firstWord;
@@ -96,31 +98,36 @@ function applyData(data) {
   document.getElementById("profile-status").textContent = data.status;
   document.getElementById("profile-avatar").src = data.avatar;
   document.getElementById("profile-badge").textContent = data.badge;
-  
+
   document.getElementById("stat-posts").textContent = data.posts;
   document.getElementById("stat-followers").textContent = data.followers;
   document.getElementById("stat-following").textContent = data.following;
 
   // CTAs
-  const instagramHref = data.instagram.startsWith("http") ? data.instagram : "https://" + data.instagram;
-  const emailHref = data.email.startsWith("mailto:") ? data.email : "mailto:" + data.email;
+  const instagramHref = data.instagram.startsWith("http")
+    ? data.instagram
+    : "https://" + data.instagram;
+  const emailHref = data.email.startsWith("mailto:")
+    ? data.email
+    : "mailto:" + data.email;
 
   document.getElementById("link-instagram").href = instagramHref;
   document.getElementById("link-email").href = emailHref;
-
-  // iOS Dock buttons update
-  document.getElementById("dock-insta-btn").href = instagramHref;
 
   // Tags rendering
   const tagsEl = document.getElementById("profile-tags");
   if (tagsEl) {
     tagsEl.innerHTML = "";
-    data.tags.split(",").map(t => t.trim()).filter(Boolean).forEach(tag => {
-      const span = document.createElement("span");
-      span.className = "tag";
-      span.textContent = tag;
-      tagsEl.appendChild(span);
-    });
+    data.tags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean)
+      .forEach((tag) => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = tag;
+        tagsEl.appendChild(span);
+      });
   }
 
   // Launch Decrypted Text Roles
@@ -129,33 +136,42 @@ function applyData(data) {
 
 // ── Tab Switching Logic (Sleek GPU-accelerated transition) ──
 function switchTab(tabId, clickedElement) {
-  // 1. Hide all active panes
-  document.querySelectorAll(".tab-pane").forEach(pane => {
-    pane.classList.remove("active");
-  });
-  
-  // 2. Open the designated pane
+  const currentActive = document.querySelector(".tab-pane.active");
   const targetPane = document.getElementById(tabId);
+
+  if (targetPane && currentActive === targetPane) {
+    return; // Already active, do nothing
+  }
+
+  // 1. Hide the active pane with a fade out
+  if (currentActive) {
+    currentActive.classList.remove("active");
+    currentActive.classList.add("exiting");
+    const oldPane = currentActive;
+    setTimeout(() => {
+      oldPane.classList.remove("exiting");
+    }, 400);
+  }
+
+  // 2. Open the designated pane
   if (targetPane) {
+    targetPane.classList.remove("exiting");
     targetPane.classList.add("active");
   }
-  
-  // 3. Highlight bottom dock elements
-  document.querySelectorAll(".dock-item").forEach(item => {
-    item.classList.remove("active");
-  });
-  
-  if (clickedElement) {
-    clickedElement.classList.add("active");
-  } else {
-    // If called via headers/logos, fetch the matching tab selector in the dock
-    let matchingId = "dock-home";
-    if (tabId === 'tab-about') matchingId = "dock-about";
-    if (tabId === 'tab-email') matchingId = "dock-email-btn";
-    
-    const matchingBtn = document.getElementById(matchingId);
-    if (matchingBtn) {
-      matchingBtn.classList.add("active");
+
+  // Update GooeyNav if needed
+  if (gooeyNavInstance && gooeyNavInstance.navRef && !clickedElement) {
+    const tabToIndex = {
+      "tab-home": 0,
+      "tab-about": 1,
+      "tab-email": 3,
+    };
+    const index = tabToIndex[tabId];
+    if (index !== undefined) {
+      const liEls = gooeyNavInstance.navRef.querySelectorAll("li");
+      if (liEls[index]) {
+        gooeyNavInstance.handleClick(liEls[index], index, true);
+      }
     }
   }
 }
@@ -211,20 +227,23 @@ function saveChanges() {
 
   const updated = {
     ...data,
-    name:      document.getElementById("edit-name").value.trim() || data.name,
-    handle:    document.getElementById("edit-handle").value.trim() || data.handle,
-    bio:       document.getElementById("edit-bio").value.trim() || data.bio,
-    status:    document.getElementById("edit-status").value.trim() || data.status,
-    avatar:    document.getElementById("edit-avatar").value.trim() || data.avatar,
-    badge:     document.getElementById("edit-badge").value.trim() || data.badge,
-    tags:      document.getElementById("edit-tags").value.trim() || data.tags,
-    posts:     document.getElementById("edit-posts").value.trim() || data.posts,
-    followers: document.getElementById("edit-followers").value.trim() || data.followers,
-    following: document.getElementById("edit-following").value.trim() || data.following,
-    instagram: document.getElementById("edit-instagram").value.trim() || data.instagram,
-    tiktok:    document.getElementById("edit-tiktok").value.trim() || data.tiktok,
-    email:     document.getElementById("edit-email").value.trim() || data.email,
-    password:  newPassword || data.password,
+    name: document.getElementById("edit-name").value.trim() || data.name,
+    handle: document.getElementById("edit-handle").value.trim() || data.handle,
+    bio: document.getElementById("edit-bio").value.trim() || data.bio,
+    status: document.getElementById("edit-status").value.trim() || data.status,
+    avatar: document.getElementById("edit-avatar").value.trim() || data.avatar,
+    badge: document.getElementById("edit-badge").value.trim() || data.badge,
+    tags: document.getElementById("edit-tags").value.trim() || data.tags,
+    posts: document.getElementById("edit-posts").value.trim() || data.posts,
+    followers:
+      document.getElementById("edit-followers").value.trim() || data.followers,
+    following:
+      document.getElementById("edit-following").value.trim() || data.following,
+    instagram:
+      document.getElementById("edit-instagram").value.trim() || data.instagram,
+    tiktok: document.getElementById("edit-tiktok").value.trim() || data.tiktok,
+    email: document.getElementById("edit-email").value.trim() || data.email,
+    password: newPassword || data.password,
   };
 
   saveData(updated);
@@ -239,14 +258,16 @@ function saveChanges() {
 }
 
 // Close modal on overlay click
-document.getElementById("admin-modal").addEventListener("click", function(e) {
+document.getElementById("admin-modal").addEventListener("click", function (e) {
   if (e.target === this) closeAdmin();
 });
 
 // Enter key on password input
-document.getElementById("admin-password").addEventListener("keydown", function(e) {
-  if (e.key === "Enter") checkPassword();
-});
+document
+  .getElementById("admin-password")
+  .addEventListener("keydown", function (e) {
+    if (e.key === "Enter") checkPassword();
+  });
 
 // ── Interactive Sparkle Particles Generator ──
 function createParticles() {
@@ -266,7 +287,7 @@ function createParticles() {
     const useSymbol = Math.random() > 0.4;
     if (useSymbol) {
       el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      el.style.fontSize = (Math.random() * 12 + 10) + "px";
+      el.style.fontSize = Math.random() * 12 + 10 + "px";
       el.style.color = colors[Math.floor(Math.random() * colors.length)];
     } else {
       const size = Math.random() * 6 + 4;
@@ -276,8 +297,8 @@ function createParticles() {
     }
 
     el.style.left = Math.random() * 100 + "vw";
-    el.style.animationDuration = (Math.random() * 10 + 8) + "s";
-    el.style.animationDelay = (Math.random() * 8) + "s";
+    el.style.animationDuration = Math.random() * 10 + 8 + "s";
+    el.style.animationDelay = Math.random() * 8 + "s";
 
     container.appendChild(el);
   }
@@ -357,7 +378,13 @@ float cnoise(vec3 P){
 }
 `;
 
-function createStackedPlanesGeometry(n, width, height, spacing, heightSegments) {
+function createStackedPlanesGeometry(
+  n,
+  width,
+  height,
+  spacing,
+  heightSegments,
+) {
   const geometry = new THREE.BufferGeometry();
   const numVertices = n * (heightSegments + 1) * 2;
   const numFaces = n * heightSegments * 2;
@@ -383,7 +410,10 @@ function createStackedPlanesGeometry(n, width, height, spacing, heightSegments) 
       positions.set([...v0, ...v1], vertexOffset * 3);
 
       const uvY = j / heightSegments;
-      uvs.set([uvXOffset, uvY + uvYOffset, uvXOffset + 1, uvY + uvYOffset], uvOffset);
+      uvs.set(
+        [uvXOffset, uvY + uvYOffset, uvXOffset + 1, uvY + uvYOffset],
+        uvOffset,
+      );
 
       if (j < heightSegments) {
         const a = vertexOffset;
@@ -398,15 +428,15 @@ function createStackedPlanesGeometry(n, width, height, spacing, heightSegments) 
     }
   }
 
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   geometry.computeVertexNormals();
   return geometry;
 }
 
 function initBeams() {
-  if (typeof THREE === 'undefined') return;
+  if (typeof THREE === "undefined") return;
 
   const canvas = document.getElementById("beams-canvas");
   if (!canvas) return;
@@ -415,7 +445,7 @@ function initBeams() {
   const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
-    alpha: true // Make WebGL canvas background fully transparent so body gradient shines through
+    alpha: true, // Make WebGL canvas background fully transparent so body gradient shines through
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -424,7 +454,12 @@ function initBeams() {
   const scene = new THREE.Scene();
 
   // 3. Setup Camera (placed direct front looking at coordinates 0,0,0)
-  const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(
+    30,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100,
+  );
   camera.position.set(0, 0, 20);
 
   // 4. Uniform Parameters
@@ -432,7 +467,7 @@ function initBeams() {
     time: { value: 0 },
     uSpeed: { value: 1.8 },
     uNoiseIntensity: { value: 1.75 },
-    uScale: { value: 1.5 } // Scaled up displacement amplitude
+    uScale: { value: 1.5 }, // Scaled up displacement amplitude
   };
 
   // 5. Custom Self-Illuminated Shader Material
@@ -499,7 +534,7 @@ function initBeams() {
     `,
     uniforms: uniforms,
     transparent: true,
-    side: THREE.DoubleSide
+    side: THREE.DoubleSide,
   });
 
   // 6. Geometry & Mesh Stack
@@ -524,7 +559,7 @@ function initBeams() {
   animate();
 
   // 8. Handle Resize
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -542,21 +577,440 @@ function initPlasma() {
     direction: "forward",
     scale: 1.1,
     opacity: 0.8,
-    mouseInteractive: true
+    mouseInteractive: true,
   });
+}
+
+// ── PixelBlast Interactive Background ──
+let pixelBlastInstance = null;
+
+function initPixelBlast() {
+  const container = document.getElementById("pixel-blast-bg");
+  if (!container) return;
+
+  if (typeof window.PixelBlast === "undefined" || typeof window.THREE === "undefined" || typeof window.postprocessing === "undefined") {
+    // If dependencies are not loaded yet, wait and try again
+    setTimeout(initPixelBlast, 100);
+    return;
+  }
+
+  pixelBlastInstance = new window.PixelBlast(container, {
+    variant: "circle",
+    pixelSize: 6,
+    color: "#B497CF",
+    patternScale: 3,
+    patternDensity: 1.2,
+    pixelSizeJitter: 0.5,
+    enableRipples: true,
+    rippleSpeed: 0.4,
+    rippleThickness: 0.12,
+    rippleIntensityScale: 1.5,
+    liquid: true,
+    liquidStrength: 0.12,
+    liquidRadius: 1.2,
+    liquidWobbleSpeed: 5,
+    speed: 2.75,
+    edgeFade: 0.25,
+    transparent: true,
+  });
+}
+
+// ── GooeyNav Initialization ──
+let gooeyNavInstance = null;
+
+function initGooeyNav() {
+  const mount = document.getElementById("gooey-nav-mount");
+  if (!mount) return;
+
+  const navItems = [
+    { label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> Home', href: "#", tabId: "tab-home" },
+    { label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> About', href: "#", tabId: "tab-about" },
+    { label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> Insta', href: "#", action: "insta" },
+    { label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Contact', href: "#", tabId: "tab-email" },
+    { label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Admin', href: "#", action: "admin" },
+  ];
+
+  gooeyNavInstance = new GooeyNav(mount, {
+    items: navItems,
+    particleCount: 15,
+    particleDistances: [90, 10],
+    particleR: 100,
+    initialActiveIndex: 0,
+    animationTime: 600,
+    timeVariance: 300,
+    colors: [1, 2, 3, 1, 2, 3, 1, 4],
+    onItemClick: (item, index) => {
+      if (item.action === "admin") {
+        openAdmin();
+        return;
+      }
+      if (item.action === "insta") {
+        const data = getData();
+        const instagramHref = data.instagram.startsWith("http")
+          ? data.instagram
+          : "https://" + data.instagram;
+        window.open(instagramHref, "_blank");
+        return;
+      }
+      // Sync with the existing tab system
+      switchTab(item.tabId, null);
+    },
+  });
+}
+
+// ── Folder Component Initialization ──
+let folderInstance = null;
+
+function initFolder() {
+  const mount = document.getElementById("qualities-folder-mount");
+  if (!mount) return;
+
+  folderInstance = new FolderComponent(mount, {
+    color: "#b588f7", // Poki lilac
+    size: 1.8,
+    className: "qualities-folder",
+    items: [
+      '<span class="paper-emoji">💖</span><span>Caring &<br>Lovely</span>',
+      '<span class="paper-emoji">🧠</span><span>Over-<br>thinker</span>',
+      '<span class="paper-emoji">🎵</span><span>Singer</span>',
+    ],
+  });
+}
+
+// ════════════════════════════════════════
+//           🥚 EASTER EGGS 🥚
+// ════════════════════════════════════════
+
+// ── Easter Egg 1: Konami Code (↑↑↓↓←→←→BA) ──
+const konamiSequence = [
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
+];
+let konamiProgress = 0;
+
+function initKonamiCode() {
+  document.addEventListener("keydown", (e) => {
+    const expected = konamiSequence[konamiProgress];
+    if (e.key === expected || e.key.toLowerCase() === expected) {
+      konamiProgress++;
+      if (konamiProgress === konamiSequence.length) {
+        konamiProgress = 0;
+        triggerKonamiEasterEgg();
+      }
+    } else {
+      konamiProgress = 0;
+    }
+  });
+}
+
+function triggerKonamiEasterEgg() {
+  const overlay = document.getElementById("easter-egg-overlay");
+  if (!overlay) return;
+  overlay.classList.add("active");
+
+  // Start emoji rain
+  const rainContainer = document.getElementById("easter-emoji-rain");
+  if (rainContainer) {
+    rainContainer.innerHTML = "";
+    const emojis = ["🌸", "💖", "✨", "🎵", "🧠", "💫", "♡", "🎌", "⭐", "🌷"];
+    for (let i = 0; i < 50; i++) {
+      const drop = document.createElement("span");
+      drop.className = "rain-drop";
+      drop.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      drop.style.left = Math.random() * 100 + "vw";
+      drop.style.animationDuration = Math.random() * 3 + 2 + "s";
+      drop.style.animationDelay = Math.random() * 2 + "s";
+      drop.style.fontSize = Math.random() * 20 + 16 + "px";
+      rainContainer.appendChild(drop);
+    }
+  }
+}
+
+function closeEasterEgg() {
+  const overlay = document.getElementById("easter-egg-overlay");
+  if (overlay) overlay.classList.remove("active");
+  showSecretToast(
+    "🥚 You're an easter egg hunter! Try clicking the avatar 5 times...",
+  );
+}
+window.closeEasterEgg = closeEasterEgg;
+
+// ── Easter Egg 2: Avatar Multi-Click Heart Explosion ──
+let avatarClickCount = 0;
+let avatarClickTimer = null;
+
+function initAvatarEasterEgg() {
+  const avatarWrapper = document.querySelector(".halo-avatar-wrapper");
+  if (!avatarWrapper) return;
+
+  avatarWrapper.addEventListener("click", (e) => {
+    avatarClickCount++;
+    clearTimeout(avatarClickTimer);
+
+    // Small heart on every click
+    spawnHeart(e.clientX, e.clientY);
+
+    avatarClickTimer = setTimeout(() => {
+      if (avatarClickCount >= 5) {
+        // Trigger massive heart explosion!
+        triggerHeartExplosion(e.clientX, e.clientY);
+        avatarWrapper.classList.add("avatar-wiggle");
+        setTimeout(() => avatarWrapper.classList.remove("avatar-wiggle"), 1000);
+        showSecretToast("💖 Nadia appreciates the love! You're amazing! ✨");
+      }
+      avatarClickCount = 0;
+    }, 600);
+  });
+}
+
+function spawnHeart(x, y) {
+  const container = document.getElementById("heart-explosion");
+  if (!container) return;
+
+  const hearts = ["💖", "💕", "❤️", "💗", "🩷", "♡"];
+  const heart = document.createElement("span");
+  heart.className = "heart-float";
+  heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+  heart.style.left = x + (Math.random() - 0.5) * 40 + "px";
+  heart.style.top = y + "px";
+  heart.style.fontSize = Math.random() * 16 + 18 + "px";
+  container.appendChild(heart);
+
+  setTimeout(() => heart.remove(), 2000);
+}
+
+function triggerHeartExplosion(cx, cy) {
+  const container = document.getElementById("heart-explosion");
+  if (!container) return;
+
+  for (let i = 0; i < 25; i++) {
+    setTimeout(() => {
+      spawnHeart(
+        cx + (Math.random() - 0.5) * 200,
+        cy + (Math.random() - 0.5) * 100,
+      );
+    }, i * 50);
+  }
+}
+
+// ── Easter Egg 3: Logo Double-Click → Matrix Emoji Rain ──
+function initLogoEasterEgg() {
+  const logo = document.getElementById("header-logo");
+  if (!logo) return;
+
+  logo.addEventListener("dblclick", (e) => {
+    e.preventDefault();
+    triggerMatrixRain();
+    showSecretToast(
+      "✦ You double-clicked the logo! Here's some sparkle magic ✦",
+    );
+  });
+}
+
+function triggerMatrixRain() {
+  const chars = [
+    "✦",
+    "✧",
+    "♡",
+    "✿",
+    "★",
+    "🌸",
+    "⭐",
+    "💫",
+    "✨",
+    "♥",
+    "N",
+    "A",
+    "D",
+    "I",
+    "A",
+  ];
+  const colors = ["#ff75a0", "#b588f7", "#7ad1ff", "#ffd3b6"];
+
+  for (let i = 0; i < 40; i++) {
+    setTimeout(() => {
+      const el = document.createElement("span");
+      el.className = "matrix-rain-char";
+      el.textContent = chars[Math.floor(Math.random() * chars.length)];
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.top = "-20px";
+      el.style.color = colors[Math.floor(Math.random() * colors.length)];
+      el.style.textShadow = `0 0 8px ${el.style.color}`;
+      el.style.animationDuration = Math.random() * 2 + 1.5 + "s";
+      el.style.animationDelay = "0s";
+      document.body.appendChild(el);
+
+      setTimeout(() => el.remove(), 4000);
+    }, i * 80);
+  }
+}
+
+// ── Easter Egg 4: Secret Keyboard Shortcut (Ctrl+Shift+L = Love) ──
+function initSecretShortcut() {
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "l") {
+      e.preventDefault();
+      showSecretToast(
+        "💌 Secret shortcut found! Nadia sends you love & virtual hugs 🤗✨",
+      );
+
+      // Flash the whole page border
+      const cards = document.querySelectorAll(
+        ".about-card, .stats-card, .contact-card",
+      );
+      cards.forEach((card) => {
+        card.classList.add("rainbow-flash");
+        setTimeout(() => card.classList.remove("rainbow-flash"), 3000);
+      });
+    }
+  });
+}
+
+// ── Easter Egg 5: Typing "nadia" anywhere triggers a toast ──
+let typedChars = "";
+
+function initNameEasterEgg() {
+  document.addEventListener("keypress", (e) => {
+    // Don't trigger inside input fields
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+    typedChars += e.key.toLowerCase();
+
+    // Keep only last 10 chars
+    if (typedChars.length > 10) {
+      typedChars = typedChars.slice(-10);
+    }
+
+    if (typedChars.includes("nadia")) {
+      typedChars = "";
+      showSecretToast("🌸 You typed my name! That's so sweet of you! 💕");
+
+      // Trigger a quick sparkle burst around the name
+      const nameEl = document.getElementById("profile-display-name");
+      if (nameEl) {
+        nameEl.style.animation = "none";
+        void nameEl.offsetWidth;
+        nameEl.style.animation = "easterShimmer 1s ease-in-out";
+        setTimeout(() => {
+          nameEl.style.animation = "";
+        }, 1000);
+      }
+    }
+
+    if (typedChars.includes("love")) {
+      typedChars = "";
+      showSecretToast(
+        "💖 Love is in the air! Sending caring vibes your way... ✨",
+      );
+      triggerHeartExplosion(window.innerWidth / 2, window.innerHeight / 2);
+    }
+
+    if (typedChars.includes("sing")) {
+      typedChars = "";
+      showSecretToast("🎵 Nadia loves to sing! Every melody tells a story 🎶");
+    }
+  });
+}
+
+// ── Easter Egg 6: Stats Counter Speed Click → Party Mode ──
+let statsClickCount = 0;
+let statsClickTimer = null;
+
+function initStatsEasterEgg() {
+  const statsCard = document.querySelector(".stats-card");
+  if (!statsCard) return;
+
+  statsCard.addEventListener("click", () => {
+    statsClickCount++;
+    clearTimeout(statsClickTimer);
+
+    statsClickTimer = setTimeout(() => {
+      if (statsClickCount >= 7) {
+        showSecretToast(
+          "🎉 PARTY MODE! You clicked the stats 7 times! Nadia is going viral! 🚀✨",
+        );
+        statsCard.classList.add("rainbow-flash");
+        setTimeout(() => statsCard.classList.remove("rainbow-flash"), 3000);
+
+        // Temporarily inflate the numbers with a fun animation
+        const numEls = statsCard.querySelectorAll(".stat-num");
+        numEls.forEach((el) => {
+          const original = el.textContent;
+          el.textContent = "∞";
+          el.style.color = "var(--poki-pink)";
+          setTimeout(() => {
+            el.textContent = original;
+            el.style.color = "";
+          }, 2500);
+        });
+      }
+      statsClickCount = 0;
+    }, 800);
+  });
+}
+
+// ── Secret Toast Notification System ──
+let toastTimer = null;
+
+function showSecretToast(text) {
+  const toast = document.getElementById("secret-toast");
+  const toastText = document.getElementById("secret-toast-text");
+  if (!toast || !toastText) return;
+
+  clearTimeout(toastTimer);
+  toastText.textContent = text;
+  toast.classList.add("show");
+
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 4000);
 }
 
 // ── Init on load ──
 document.addEventListener("DOMContentLoaded", () => {
   const activeData = getData();
   applyData(activeData);
-  createParticles();
+  
+  // Initialize backgrounds adaptively
+  const isMobileDevice = /Mobi|Android|iPhone|iPad|Macintosh.*Touch/i.test(navigator.userAgent);
+  if (isMobileDevice) {
+    document.body.classList.add("mobile-device");
+  } else {
+    document.body.classList.add("pc-device");
+  }
 
-  // Launch Background Systems
-  initBeams();
-  initPlasma();
+  // Consider it mobile only if we are on a real mobile device OR screen width is < 768 and we aren't a PC device
+  const isMobile = isMobileDevice || (window.innerWidth < 768 && !document.body.classList.contains("pc-device"));
+  
+  if (isMobile) {
+    createParticles();
+    initBeams();
+    initPlasma();
+  } else {
+    initPixelBlast();
+  }
+
+  // Initialize New Components
+  initGooeyNav();
+  initFolder();
+
+  // Initialize Easter Eggs 🥚
+  initKonamiCode();
+  initAvatarEasterEgg();
+  initLogoEasterEgg();
+  initSecretShortcut();
+  initNameEasterEgg();
+  initStatsEasterEgg();
 
   window.addEventListener("resize", () => {
-    createParticles();
+    // No longer regenerating particles to save CPU/GPU cycles
   });
 });

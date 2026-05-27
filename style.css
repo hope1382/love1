@@ -1403,45 +1403,45 @@ body {
 }
 
 /* ── Responsive Background Selection ── */
-/* Default values: Hide PixelBlast by default, show others as fallback */
-.pixel-blast-container {
+/* Default fallback values: Hide WebGL canvases on mobile by default to prevent any lag */
+.pixel-blast-container,
+.beams-bg-canvas,
+.plasma-container {
   display: none !important;
 }
-.beams-bg-canvas,
-.bg-particles,
-.plasma-container {
+.bg-particles {
   display: block !important;
 }
 
-/* On PC/Desktop (width >= 768px): Show PixelBlast background, hide others */
+/* On PC/Desktop (width >= 768px): Show high-performance animations and hide plasma fallback */
 @media (min-width: 768px) {
-  .pixel-blast-container {
+  .pixel-blast-container,
+  .beams-bg-canvas,
+  .bg-particles {
     display: block !important;
   }
-  .beams-bg-canvas,
-  .bg-particles,
   .plasma-container {
     display: none !important;
   }
 }
 
 /* Explicit class-based overrides for desktop/PC experience when preview iframe is narrow */
-body.pc-device .pixel-blast-container {
+body.pc-device .pixel-blast-container,
+body.pc-device .beams-bg-canvas,
+body.pc-device .bg-particles {
   display: block !important;
 }
-body.pc-device .beams-bg-canvas,
-body.pc-device .bg-particles,
 body.pc-device .plasma-container {
   display: none !important;
 }
 
-/* Explicit class-based overrides for real mobile devices to run mobile bg and disable pixel blast */
-body.mobile-device .pixel-blast-container {
+/* Explicit class-based overrides for real mobile devices to disable heavy features */
+body.mobile-device .pixel-blast-container,
+body.mobile-device .beams-bg-canvas,
+body.mobile-device .plasma-container {
   display: none !important;
 }
-body.mobile-device .beams-bg-canvas,
-body.mobile-device .bg-particles,
-body.mobile-device .plasma-container {
+body.mobile-device .bg-particles {
   display: block !important;
 }
 

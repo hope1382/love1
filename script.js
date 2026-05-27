@@ -991,10 +991,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const isMobile = isMobileDevice || (window.innerWidth < 768 && !document.body.classList.contains("pc-device"));
   
   if (isMobile) {
+    // Only run lightweight CSS rising sparkles (hardware-accelerated, 100% lag-free on mobile)
+    createParticles();
+  } else {
+    // Run full cinematic animations on PC (PixelBlast, volumetric 3D Beams, and CSS sparkles)
     createParticles();
     initBeams();
-    initPlasma();
-  } else {
     initPixelBlast();
   }
 

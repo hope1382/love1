@@ -501,5 +501,3 @@ class PixelBlast {
 }
 
 window.PixelBlast = PixelBlast;
-
-

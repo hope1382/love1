@@ -36,21 +36,20 @@
 
 .gooey-nav-container {
   position: relative;
-  max-width: 100%;
+  width: 100%;
 }
 
 .gooey-nav-container nav {
   display: flex;
   position: relative;
   z-index: 2;
-  max-width: 100%;
+  width: 100%;
 }
 
 .gooey-nav-container nav ul {
   display: flex;
-  gap: 1em;
   list-style: none;
-  padding: 0 0.5em;
+  padding: 0 4px;
   margin: 0;
   position: relative;
   z-index: 3;
@@ -60,10 +59,10 @@
   font-weight: 500;
   font-size: 13.5px;
   letter-spacing: -0.1px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
   width: 100%;
+  justify-content: stretch;
+  overflow: visible;
 }
 .gooey-nav-container nav ul::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
@@ -73,7 +72,6 @@
   border-radius: 100vw;
   position: relative;
   cursor: pointer;
-  flex-shrink: 0;
   z-index: 2;
   transition:
     background-color 0.3s ease,
@@ -81,17 +79,25 @@
     box-shadow 0.3s ease;
   box-shadow: 0 0 0.5px 1.5px transparent;
   color: var(--text-light, white);
+  flex: 1 1 0px; /* Distribute horizontal space exactly equally across all items */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
 }
 
 .gooey-nav-container nav ul li a {
-  display: inline-block;
-  padding: 0.5em 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55em 0.25em; /* Tight padding to elegantly fit the elements */
   text-decoration: none;
   color: inherit;
   cursor: pointer;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .gooey-nav-container nav ul li a svg {
@@ -223,35 +229,40 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   overflow: visible;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
   .gooey-nav-container nav ul {
-    gap: 4px;
-    font-size: 13px;
-    padding: 0 4px;
+    gap: 0;
+    font-size: 12.5px;
+    padding: 0 2px;
   }
   .gooey-nav-container nav ul li a {
-    padding: 0.55em 0.8em;
+    padding: 0.55em 0.1em;
   }
   .ios-dock-wrapper {
     bottom: 20px;
-    width: auto;
-    max-width: calc(100% - 32px);
+    width: calc(100% - 24px); /* Slightly closer to the edges on mobile for maximum space allocation */
+    max-width: calc(100% - 24px);
   }
   .gooey-header-nav {
-    padding: 6px;
-    width: auto;
+    padding: 4px 4px;
+    width: 100%;
   }
 }
 
 @media (max-width: 380px) {
   .gooey-nav-container nav ul {
-    gap: 2px;
-    font-size: 12px;
-    padding: 0 2px;
+    gap: 0;
+    font-size: 11px; /* Slightly tighten size for extremely narrow screen widths (e.g. iPhone SE / 320px) */
+    padding: 0 1px;
   }
   .gooey-nav-container nav ul li a {
-    padding: 0.5em 0.7em;
+    padding: 0.5em 0.05em;
+  }
+  .gooey-nav-container nav ul li a svg {
+    margin-right: 2px !important; /* Decrease margin space between icon and text */
   }
 }
